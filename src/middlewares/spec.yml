@@ -1,0 +1,155 @@
+openapi: 3.0.0
+info:
+  title: Delilah Restaurant App
+  description: This is an API to manage users' web orders
+  version: 0.1.9
+servers:
+  - url: http://localhost:9090
+    description: Development server to try requests.
+paths:
+  /login:
+    post:
+      tags: 
+        - Log in
+      summary: Login for an user
+      description: Endpoint to send login information.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: Response returns user's index of users array.
+        400:
+          description: Failed to realize login.
+  /users:
+    get:
+      tags: 
+        - Users
+      summary: Get all users.
+      description: Endpoint to get all registered users.
+      responses:
+        200:
+          description: Response returns all registered users.
+        400:
+          description: Failed to load all registered users.
+    post:
+      tags: 
+        - Users
+      summary: Create an user
+      description: Endpoint to create an user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                name:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                phoneNumber:
+                  type: integer
+                password:
+                  type: string
+                addresses:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: 
+                        type: integer
+                      street: 
+                        type: string
+                      number: 
+                        type: integer
+                      city:     
+                        type: string
+                      province: 
+                        type: string
+                admin:
+                  type: boolean
+                  default: false
+      responses:
+        200:
+          description: Response returns user's index of users array.
+        400:
+          description: Failed to realize login.
+  /paymentMethods:
+    get:
+      tags: 
+        - Payment Methods
+      description: Endpoint to get all Payment Methods.
+      responses:
+        200:
+          description: Response returns all Payment Methods.
+        400:
+          description: Failed to load all Payment Methods.
+    post:
+      tags: 
+        - Payment Methods
+      summary: Create a Payment Method
+      description: Endpoint to create a Payment Method
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                detail:
+                  type: string
+                active:
+                  type: boolean
+                  default: true
+      responses:
+        200:
+          description: Response returns a Payment Methods array.
+        400:
+          description: Failed to load Payment Methods.
+  /products:
+    get:
+      tags: 
+        - Products
+      description: Endpoint to get all Products.
+      responses:
+        200:
+          description: Response returns all active Products.
+        400:
+          description: Failed to load all Products.
+    post:
+      tags: 
+        - Products
+      summary: Create a Product
+      description: Endpoint to create a Product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                detail:
+                  type: string
+                price:
+                  type: integer
+                active:
+                  type: boolean
+                  default: true
+      responses:
+        200:
+          description: Response returns a Products array.
+        400:
+          description: Failed to load Products.

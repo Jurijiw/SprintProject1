@@ -1,0 +1,22 @@
+{
+  "name": "api1",
+  "version": "1.0.0",
+  "description": "API to manage all Delilah restaurant orders",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "restaurant",
+    "orders"
+  ],
+  "author": "Lia Jurijiw Aguero",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "js-yaml": "^4.1.0",
+    "nodemon": "^2.0.9",
+    "swagger-ui-express": "^4.1.6"
+  }
+}
