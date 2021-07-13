@@ -1,5 +1,5 @@
 const express = require('express');
-const { validateLogin, getUserPosition, usersInfo } = require('../data/users');
+const { validateLogin, getUserPosition } = require('../data/users');
 
 function getRouter() {
     const router = express.Router();

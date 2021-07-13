@@ -1,22 +1,22 @@
 const status = [
     {
-        id: 1625082331400,
+        id: 1,
         detail: 'Pendiente',
     },
     {
-        id: 1625082341708,
+        id: 2,
         detail: 'Confirmado',
     },
     {
-        id: 1625082363008,
+        id: 3,
         detail: 'En preparacion',
     },
     {
-        id: 1625082383225,
+        id: 4,
         detail: 'Enviado',
     },
     {
-        id: 1625082391301,
+        id: 5,
         detail: 'Entregado',
     }
 ]

@@ -1,5 +1,5 @@
 const express = require('express');
-const { isAdmin } = require('../middlewares/validators');
+const { isAdmin, validateProduct, validateOrderID, validateUserID } = require('../middlewares/validators');
 const { usersInfo } = require('../data/users');
 const { ordersInfo } = require('../data/orders');
 
@@ -8,29 +8,37 @@ function getRouterOrders() {
 
     //Admins
     router.get('/orders', isAdmin, (req, res) => {
-        const orders = ordersInfo.sort((a, b) => (a.status > b.status ? 1 : a.status < b.status ? -1 : 0));
-        res.send(orders);
+        const orders = ordersInfo.sort(orderByDateAndStatus);
+        res.status(200).send({
+            ok:true,
+            orders: orders
+        });
     });
 
-    router.get('/orders/:id', isAdmin, (req, res) => {
+    router.get('/orders/:idUser', isAdmin, validateOrderID, (req, res) => {
         const idOrder = Number(req.params.id);
         const order = ordersInfo.filter(order => order.id === idOrder);
-        res.send(order);
+        res.status(200).send({
+            ok: true,
+            order: order
+        });
     });
 
-    router.put('/orders/:id', isAdmin , (req, res) => {
-        const idOrder = Number(req.params.id);
+    router.put('/orders/:idOrder', isAdmin , validateOrderID, (req, res) => {
+        const idOrder = Number(req.params.idOrder);
         for (const order of ordersInfo) {
             if (idOrder === order.id) {
                 order.status = req.body.status;
-
-                return res.json(order);
+                return res.status(200).send({
+                    ok:true,
+                    order: order
+                });
             }
-        }
+        }   
     });
 
-    router.delete('/orders/:id', isAdmin , (req, res) => {
-        const idOrder = Number(req.params.id);
+    router.delete('/orders/:idOrder', isAdmin , validateOrderID, (req, res) => {
+        const idOrder = Number(req.params.idOrder);
         for (const order of ordersInfo) {
             if (idOrder === order.id) {
                 const index = ordersInfo.indexOf(order);
@@ -43,55 +51,71 @@ function getRouterOrders() {
     });
 
     //Users
-    router.post('/users/:id/orders', (req, res) => {
-        const idUser = Number(req.params.id);
+    router.post('/users/:idUser/orders', validateProduct, validateUserID ,(req, res) => {
+        const idUser = Number(req.params.idUser);
         const id = new Date();
+        if(req.body.address === '' || req.body.address === undefined || req.body.address === null){
+            for (const user of usersInfo) {
+                if (user.id === idUser) {
+                    req.body.address = {
+                        'street': user.addresses[0].street,
+                        'number': user.addresses[0].number,
+                        'city': user.addresses[0].city,
+                        'province': user.addresses[0].province
+                    }
+                }
+            }
+        }
         const orderData =  {
             ...req.body,
             id: id.getTime(),
             userId: idUser,
             date: id
-          };
+            };
         ordersInfo.push(orderData);
         res.send(ordersInfo);
     });
 
-    router.get('/users/:id/orders', (req, res) => {
-        const idUser = Number(req.params.id);
-        const order = ordersInfo.filter(order => order.userId === idUser);
-        res.send(order);
+    router.get('/users/:idUser/orders', validateUserID, (req, res) => {
+        const idUser = Number(req.params.idUser);
+        if (idUser === null || idUser === undefined || idUser === ''){
+            res.send('El historial no se puede visualizar porque no es un usuario registrado.');
+        } else {
+            const order = ordersInfo.filter(order => order.userId === idUser);
+            res.send(order);
+        }
     });
 
-    router.get('/users/:idUser/orders/:idOrder', (req, res) => {
+    router.get('/users/:idUser/orders/:idOrder', validateUserID, validateOrderID, (req, res) => {
         const idUser = Number(req.params.idUser);
         const idOrder = Number(req.params.idOrder);
         const order = ordersInfo.filter(order => order.id === idOrder && order.userId === idUser);
         res.send(order);
+
     });
 
-    router.put('/users/:idUser/orders/:idOrder', (req, res) => {
+    router.put('/users/:idUser/orders/:idOrder', validateProduct,validateOrderID, validateUserID , (req, res) => {
         const idUser = Number(req.params.idUser);
         const idOrder = Number(req.params.idOrder);
         const newDate = new Date();
-        for (const order of ordersInfo) {
-            if (idOrder === order.id && order.status === 1625082331400) { //Order estado pendiente
-                const data = req.body;
-                order.detail = data.detail;
-                order.paymentMethod = data.paymentMethod;
-                order.address = data.address;
-                order.date = newDate;
+            for (const order of ordersInfo) {
+                if (idOrder === order.id && order.status === 1) { //Order estado pendiente
+                    const data = req.body;
 
-                return res.json(ordersInfo);
+                    order.detail = data.detail;
+                    order.date = newDate;
+    
+                    return res.json(ordersInfo);
+                }
             }
-        }
-        res.send(order);
+            return res.send('Error al modificar el pedido');
     });
     
-    router.delete('/users/:idUser/orders/:idOrder', (req, res) => {
+    router.delete('/users/:idUser/orders/:idOrder', validateUserID, validateOrderID ,(req, res) => {
         const idUser = Number(req.params.idUser);
         const idOrder = Number(req.params.idOrder);
         for (const order of ordersInfo) {
-            if (idOrder === order.id && order.userId === idUser && order.status === 1625082331400) {
+            if (idOrder === order.id && order.userId === idUser && order.status === 1) { //Order estado pendiente
                 const index = ordersInfo.indexOf(order);
                 if (index > -1) {
                     ordersInfo.splice(index, 1);
@@ -102,6 +126,16 @@ function getRouterOrders() {
     });
 
     return router;
+}
+
+function orderByDateAndStatus(a,b) {
+    if(a.date < b.date) return 1;
+    else if (a.date > b.date) return -1;
+    else {
+        if (a.status > b.status) return 1;
+        else if (a.status < b.status) return -1;
+        return 0;
+    }
 }
 
 module.exports = {

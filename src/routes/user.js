@@ -1,6 +1,6 @@
 const express = require('express');
 const { usersInfo } = require('../data/users');
-const { isAdmin } = require('../middlewares/validators');
+const { isAdmin, validateEmail } = require('../middlewares/validators');
 
 
 function getRouterUser() {
@@ -16,7 +16,7 @@ function getRouterUser() {
         res.send(user);
     });
 
-    router.put('/users/:id', (req, res) => {
+    router.put('/users/:id',  (req, res) => {
         const idUser = Number(req.params.id);
         for (const user of usersInfo) {
             if (idUser === user.id) {
@@ -33,7 +33,7 @@ function getRouterUser() {
         }
     });
 
-    router.post('/users', (req, res) => {
+    router.post('/users', validateEmail, validateBodyUser, (req, res) => {
         console.log(req.body);
         const id = new Date().getTime();
         const userData =  {
@@ -44,7 +44,7 @@ function getRouterUser() {
         res.send(usersInfo);
     });
 
-    router.delete('/users/:id', (req, res) => {
+    router.delete('/users/:id', validateBodyUser,(req, res) => {
         const idUser = Number(req.params.id);
         for (const user of usersInfo) {
             if (idUser === user.id) {
@@ -58,6 +58,17 @@ function getRouterUser() {
     });
 
     return router;
+}
+
+function validateBodyUser(req,res,next) {
+    if (!req.body.username || !req.body.name ||
+        !req.body.lastName || !req.body.email ||
+        !req.body.phoneNumber || !req.body.password
+        ) {
+        return res.send('Complete todos los datos')
+    } else {
+        return next();
+    }
 }
 
 module.exports = {

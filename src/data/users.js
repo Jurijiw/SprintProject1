@@ -8,7 +8,6 @@ const users = [
         phoneNumber: 2222111111,
         addresses:[
             {
-                id: 1,
                 street: 'Almafuerte',
                 number: 1234,
                 city: 'Rio Grande',
@@ -27,7 +26,6 @@ const users = [
         phoneNumber: 2222333333,
         addresses:[
             {
-                id: 1,
                 street: 'Estrada',
                 number: 2020,
                 city: 'Rio Grande',

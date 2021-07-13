@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const { loadDocumentation } = require('./middlewares/documentation');
 const { getRouter } = require('./routes/login');
@@ -6,6 +8,9 @@ const { getRouterProd } = require('./routes/product');
 const { getRouterUser } = require('./routes/user');
 const { getRouterOrders } = require('./routes/order');
 
+const version = '/api/v1';
+const port = process.env.PORT || 3030;
+
 
 function main(){
     const server = express();
@@ -13,22 +18,22 @@ function main(){
     loadDocumentation(server);
 
     //Login routes - Probadas
-    server.use('/', getRouter());
+    server.use(version, getRouter());
 
     //Users routes - Probadas
-    server.use('/', getRouterUser());
+    server.use(version, getRouterUser());
 
     //Payment Methods routes - 
-    server.use('/', getRouterPM());
+    server.use(version, getRouterPM());
 
     //Products routes
-    server.use('/', getRouterProd());
+    server.use(version, getRouterProd());
 
     //Orders routes
-    server.use('/', getRouterOrders());
+    server.use(version, getRouterOrders());
 
-    server.listen(9090, () => {
-        console.log('Server ready: http://localhost:9090');
+    server.listen(port, () => {
+        console.log(`Server running on port: ${port}`);
     });
 }
 
