@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Delilah Restaurant App
-  description: This is an API to manage users' web orders
+  description: This is an API to manage manage users, orders, payment methods and products.
   version: 0.1.9
 servers:
   - url: http://localhost:9090/api/v1
@@ -287,7 +287,7 @@ paths:
           description: Failed to delete payment method.
           
           
-          
+
           
           
           
