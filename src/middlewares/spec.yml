@@ -4,7 +4,7 @@ info:
   description: This is an API to manage users' web orders
   version: 0.1.9
 servers:
-  - url: http://localhost:9090
+  - url: http://localhost:9090/api/v1
     description: Development server to try requests.
 paths:
   /login:
@@ -12,7 +12,7 @@ paths:
       tags: 
         - Log in
       summary: Login for an user
-      description: Endpoint to send login information.
+      description: Endpoint to send login information. You can log in using username or email and password.
       requestBody:
         required: true
         content:
@@ -22,8 +22,10 @@ paths:
               properties:
                 username:
                   type: string
+                  example: adri123
                 password:
                   type: string
+                  example: adri123
       responses:
         200:
           description: Response returns user's index of users array.
@@ -34,11 +36,19 @@ paths:
       tags: 
         - Users
       summary: Get all users.
-      description: Endpoint to get all registered users.
+      description: Endpoint to get all registered users. It is visible to admin users only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
       responses:
         200:
           description: Response returns all registered users.
-        400:
+        404:
           description: Failed to load all registered users.
     post:
       tags: 
@@ -50,106 +60,358 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                name:
-                  type: string
-                lastName:
-                  type: string
-                email:
-                  type: string
-                phoneNumber:
-                  type: integer
-                password:
-                  type: string
-                addresses:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id: 
-                        type: integer
-                      street: 
-                        type: string
-                      number: 
-                        type: integer
-                      city:     
-                        type: string
-                      province: 
-                        type: string
-                admin:
-                  type: boolean
-                  default: false
+              $ref: '#/components/schemas/User'
       responses:
         200:
-          description: Response returns user's index of users array.
-        400:
-          description: Failed to realize login.
+          description: Response returns new user information.
+        404:
+          description: Failed to create a new user.
+  /users/{idUser}/products:
+    get:
+      tags: 
+        - Products
+      summary: Get all actives and fav products by user id.
+      description: Endpoint to get all actives Products and user's fav products. It is visible to user only.
+      parameters:
+        - in: path
+          name: idUser
+          schema:
+            type: number
+            example: 1625080204721
+          required: true
+          description: Numeric ID of the user to be able to get products.
+      responses:
+        200:
+          description: Response returns all active Products and user's fav products.
+        404:
+          description: Failed to load Products.
+  /products:
+    get:
+      tags: 
+        - Products
+      summary: Get all products including inactive products.
+      description: Endpoint to get all Products. It is visible to admin user only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user to be able to get users.
+      responses:
+        200:
+          description: Response returns all Products.
+        404:
+          description: Failed to load Products.
+    post:
+      tags: 
+        - Products
+      summary: Create a new product.
+      description: Endpoint to create a new product. It is just for admin user only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        200:
+          description: Response returns new product.
+        404:
+          description: Failed to create product.
+  /products/{id}:
+    put:
+      tags: 
+        - Products
+      summary: Update an existing product.
+      description: Endpoint to update an existing product. It is just for admin user only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
+        - in: path
+          name: id
+          schema:
+            type: number
+            example: 1625082901706
+          required: true
+          description: Numeric ID of the product to be able to update it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        200:
+          description: Response returns updated product.
+        404:
+          description: Failed to update product.
+    delete:
+      tags: 
+        - Products
+      summary: Delete an existing product.
+      description: Endpoint to delete an existing product. It is just for admin user only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
+        - in: path
+          name: id
+          schema:
+            type: number
+            example: 1625082901706
+          required: true
+          description: Numeric ID of the product to be able to delete it.
+      responses:
+        200:
+          description: Response returns a confirmation message.
+        404:
+          description: Failed to delete product.
   /paymentMethods:
     get:
       tags: 
         - Payment Methods
-      description: Endpoint to get all Payment Methods.
+      summary: Get all existing payment method.
+      description: Endpoint to get all Payment Methods. It is just for admin user only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
       responses:
         200:
-          description: Response returns all Payment Methods.
-        400:
+          description: Response returns all Payment Methods, actives and inactives.
+        404:
           description: Failed to load all Payment Methods.
     post:
       tags: 
         - Payment Methods
       summary: Create a Payment Method
-      description: Endpoint to create a Payment Method
+      description: Endpoint to create a Payment Method. It is just for admin user only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                detail:
-                  type: string
-                active:
-                  type: boolean
-                  default: true
+              $ref: '#/components/schemas/PaymentMethod'
       responses:
         200:
-          description: Response returns a Payment Methods array.
-        400:
+          description: Response returns a Payment Methods object.
+        404:
           description: Failed to load Payment Methods.
-  /products:
-    get:
+  /paymentMethods/{id}:
+    put:
       tags: 
-        - Products
-      description: Endpoint to get all Products.
-      responses:
-        200:
-          description: Response returns all active Products.
-        400:
-          description: Failed to load all Products.
-    post:
-      tags: 
-        - Products
-      summary: Create a Product
-      description: Endpoint to create a Product
+        - Payment Methods
+      summary: Update an existing Payment Method.
+      description: Endpoint to update an existing Payment Method. It is just for admin user only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
+        - in: path
+          name: id
+          schema:
+            type: number
+            example: 1625082125742
+          required: true
+          description: Numeric ID of the payment method.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                detail:
-                  type: string
-                price:
-                  type: integer
-                active:
-                  type: boolean
-                  default: true
+              $ref: '#/components/schemas/PaymentMethod'
       responses:
         200:
-          description: Response returns a Products array.
-        400:
-          description: Failed to load Products.
+          description: Response returns updated payment method.
+        404:
+          description: Failed to update payment method.
+    delete:
+      tags: 
+        - Payment Methods
+      summary: Delete an existing Payment Method.
+      description: Endpoint to delete an existing Payment Method. It is just for admin user only.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
+        - in: path
+          name: id
+          schema:
+            type: number
+            example: 1625082125742
+          required: true
+          description: Numeric ID of the payment method.
+      responses:
+        200:
+          description: Response returns a confirmation message.
+        404:
+          description: Failed to delete payment method.
+          
+          
+          
+          
+          
+          
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - username
+        - name
+        - email
+        - phoneNumber
+        - address
+        - password
+      properties:
+        username:
+          type: string
+          example: adri123
+        name:
+          type: string
+          example: Adriana Lopez 
+        email:
+          type: string
+          format: email
+          example: alopez@mail.com
+        phoneNumber:
+          type: number
+          example: 2964635241
+        address:
+          type: object
+          properties:
+            street:
+              type: string
+              example: Estrada
+            number:
+              type: number
+              example: 2020
+            city:
+              type: string
+              example: Rio Grande  
+            province:
+              type: string
+              example: TDF
+    Product:
+      required:
+        - detail
+        - price
+      properties:
+        detail:
+          type: string
+          example: Milanesa con pure
+        price:
+          type: number
+          example: 350.25
+        active:
+          type: boolean
+          example: false
+          default: true
+    PaymentMethod:
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          example: Tarjeta de credito
+
+
+
+
+    Order:
+      required:
+        - id
+        - detail
+        - userId
+        - paymentMethod
+        - address
+        - status
+        - date
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 1625082031025
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1625082848172
+              amount:
+                type: integer
+                minimum: 1
+                example: 6
+        userId:
+          type: string
+          format: uuid
+          example: 1625080204721
+        paymentMethod:
+          type: string
+          format: uuid
+          example: 1625082031025
+        address:
+          type: object
+          properties:
+            street:
+              type: string
+              example: Estrada
+            number:
+              type: number
+              example: 2020
+            city:
+              type: string
+              example: Rio Grande  
+            province:
+              type: string
+              example: TDF
+        status:
+          type: number
+          minimum: 1
+          maximum: 5
+          example: 1
+        date:
+          type: string
+          format: date-time
+          example: '2021-07-05T03:50:06.166Z'

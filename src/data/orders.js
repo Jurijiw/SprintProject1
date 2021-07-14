@@ -81,7 +81,23 @@ const orders = [
     }
 ]
 
+function getFavs(id) {
+    let favs = [];
+    const userOrders = orders.filter(order => order.userId === id );
+    for (const order of userOrders) {
+        for (const product of order.detail) {
+            if ( favs.includes( product.idProduct ) ){
+                favs = favs;
+            } else {
+                favs.push(product.idProduct);
+            }
+        }
+    }
+    return favs;
+}
+
 module.exports = {
     ordersInfo: orders,
+    getFavs
 
 }

@@ -19,7 +19,34 @@ const products = [
     }
 ]
 
+function createProd(body, id) {
+    const data = new Object();
+    data.detail = body.detail;
+    data.price = body.price;
+
+    const prodData =  {
+        ...data,
+        id: id,
+        active: true
+      };
+    products.push(prodData);
+    return prodData;
+}
+
+function checkBody(body) {
+    let msg = '';
+    if ( !body.detail ) {
+        msg += 'Nombre de usuario es requerido.';
+    }
+    if ( !body.price || body.price <= 0 ) {
+        msg += 'El precio es necesario. El mismo debe ser mayor a $ 0.';
+    }
+
+    return msg;
+}
+
 module.exports = {
     productsInfo: products,
-
+    createProd,
+    checkBody
 }

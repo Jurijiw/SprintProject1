@@ -1,5 +1,5 @@
 const express = require('express');
-const { isAdmin, validateProduct, validateOrderID, validateUserID } = require('../middlewares/validators');
+const { isAdmin, validateProduct, validateOrderID, validateUserID, validateOrderStatus } = require('../middlewares/validators');
 const { usersInfo } = require('../data/users');
 const { ordersInfo } = require('../data/orders');
 
@@ -10,12 +10,12 @@ function getRouterOrders() {
     router.get('/orders', isAdmin, (req, res) => {
         const orders = ordersInfo.sort(orderByDateAndStatus);
         res.status(200).send({
-            ok:true,
+            ok: true,
             orders: orders
         });
     });
 
-    router.get('/orders/:idUser', isAdmin, validateOrderID, (req, res) => {
+    router.get('/orders/:idOrder', isAdmin, validateOrderID, (req, res) => {
         const idOrder = Number(req.params.id);
         const order = ordersInfo.filter(order => order.id === idOrder);
         res.status(200).send({
@@ -78,12 +78,8 @@ function getRouterOrders() {
 
     router.get('/users/:idUser/orders', validateUserID, (req, res) => {
         const idUser = Number(req.params.idUser);
-        if (idUser === null || idUser === undefined || idUser === ''){
-            res.send('El historial no se puede visualizar porque no es un usuario registrado.');
-        } else {
-            const order = ordersInfo.filter(order => order.userId === idUser);
-            res.send(order);
-        }
+        const order = ordersInfo.filter(order => order.userId === idUser);
+        res.send(order);
     });
 
     router.get('/users/:idUser/orders/:idOrder', validateUserID, validateOrderID, (req, res) => {
@@ -91,24 +87,31 @@ function getRouterOrders() {
         const idOrder = Number(req.params.idOrder);
         const order = ordersInfo.filter(order => order.id === idOrder && order.userId === idUser);
         res.send(order);
-
     });
 
-    router.put('/users/:idUser/orders/:idOrder', validateProduct,validateOrderID, validateUserID , (req, res) => {
-        const idUser = Number(req.params.idUser);
+    router.put('/users/:idUser/orders/:idOrder', validateProduct,validateOrderID, validateUserID, validateOrderStatus, (req, res) => {
         const idOrder = Number(req.params.idOrder);
         const newDate = new Date();
             for (const order of ordersInfo) {
-                if (idOrder === order.id && order.status === 1) { //Order estado pendiente
+                if (idOrder === order.id) {
                     const data = req.body;
-
                     order.detail = data.detail;
-                    order.date = newDate;
-    
-                    return res.json(ordersInfo);
+                    order.date = newDate; 
+                    return res.json(order);
                 }
             }
             return res.send('Error al modificar el pedido');
+    });
+
+    router.put('/users/:idUser/orders/:idOrder/confirm', validateOrderID, validateUserID, validateOrderStatus, (req, res) => {
+        const idOrder = Number(req.params.idOrder);
+            for (const order of ordersInfo) {
+                if (idOrder === order.id) {
+                    order.status = 2;
+                    return res.json(order);
+                }
+            }
+            return res.send('Error al confirmar el pedido');
     });
     
     router.delete('/users/:idUser/orders/:idOrder', validateUserID, validateOrderID ,(req, res) => {

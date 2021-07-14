@@ -17,6 +17,26 @@ const paymentMethods = [
     }
 ]
 
+function createPM(body, id) {
+    const pmData =  {
+        detail: body.detail,
+        id: id,
+        active: true
+      };
+    paymentMethods.push(pmData);
+    return pmData;
+}
+
+function checkBody(body) {
+    let msg = '';
+    if ( !body.detail ) {
+        msg += 'Descripcion de metodo de pago es requerida.';
+    }
+    return msg;
+}
+
 module.exports = {
-    paymentMethodsInfo: paymentMethods
+    paymentMethodsInfo: paymentMethods,
+    createPM,
+    checkBody
 }

@@ -1,56 +1,103 @@
 const express = require('express');
-const { usersInfo } = require('../data/users');
-const { productsInfo } = require('../data/products');
-const { isAdmin } = require('../middlewares/validators');
+const { productsInfo, createProd, checkBody } = require('../data/products');
+const { isAdmin, validateUserID, validateProductByID, isLogin } = require('../middlewares/validators');
+const { getFavs } = require('../data/orders');
 
 
 function getRouterProd() {
     const router = express.Router();
 
-    router.get('/products', (req, res) => {
-        res.send(productsInfo);
+    router.get('/products', isLogin, isAdmin, (req, res) => {
+        if( productsInfo.length > 0){
+            res.status(200).send({
+                ok: true,
+                products: productsInfo});
+        } else {
+            res.status(200).send({
+                ok: true,
+                msg: 'Lo sentimos. No existen productos aun.'});
+        }
     });
 
-    router.get('/products/:id', (req, res) => {
-        const idProd = Number(req.params.id);
-        const product = productsInfo.filter(prod => prod.id === idProd && prod.active === true);
-        res.send(product);
+    router.get('/users/:idUser/products', isLogin ,validateUserID, (req, res) => {
+        const id = Number(req.params.idUser);
+        const favs = getFavs(id);
+        const activeProds = productsInfo.filter(product => product.active === true );
+        if( productsInfo.length > 0){
+            res.status(200).send({
+                ok: true,
+                favs: favs,
+                products: activeProds});
+        } else {
+            res.status(200).send({
+                ok: true,
+                msg: 'Lo sentimos. No existen productos aun.'});
+        }
     });
-    
-    router.put('/products/:id', isAdmin , (req, res) => {
+
+    router.post('/products', isLogin ,isAdmin, (req, res) => {
+        console.log(req.body);
+        const id = new Date().getTime();
+        const bodyOk = checkBody(req.body);
+        if( bodyOk === '') {
+            const product = createProd(req.body, id);
+            if( product ) {
+                res.status(200).send({
+                    ok: true,
+                    newProduct: product
+                });
+            } else {
+                res.status(404).send({
+                    ok: true,
+                    msg: 'Error al intentar crear el producto.'
+                });
+            }
+        }
+        res.status(404).send({
+            ok: false,
+            msg: bodyOk
+        });
+    });
+
+    router.put('/products/:id', isLogin , isAdmin , validateProductByID, (req, res) => {
         const idProd = Number(req.params.id);
         for (const product of productsInfo) {
             if (idProd === product.id) {
-                const data = req.body;
-                product.detail = data.detail;
-                product.price = data.price;
-                product.active = data.active;
-
-                return res.json(productsInfo);
+                if ( req.body.detail ) product.detail = req.body.detail;
+                if ( req.body.price ) {
+                    if ( req.body.price <= 0 ) {
+                        return res.status(404).send({
+                            ok: true,
+                            msg: 'El precio debe ser mayor a $ 0.'
+                        })
+                    }
+                    product.price = req.body.price;
+                }
+                return res.status(200).send({
+                    ok: true,
+                    updatedProduct: product
+                })
             }
         }
     });
 
-    router.post('/products', isAdmin, (req, res) => {
-        console.log(req.body);
-        const id = new Date().getTime();
-        const userData =  {
-            ...req.body,
-            id: id,
-          };
-        productsInfo.push(userData);
-        res.send(productsInfo);
-    });
-
-    router.delete('/products/:id', isAdmin , (req, res) => {
+    router.delete('/products/:id', isLogin , isAdmin , validateProductByID, (req, res) => {
         const idProd = Number(req.params.id);
         for (const product of productsInfo) {
+            const nameProduct = product.detail;
             if (idProd === product.id) {
                 const index = productsInfo.indexOf(product);
                 if (index > -1) {
                     productsInfo.splice(index, 1);
+                    return res.status(200).send({
+                        ok: true,
+                        msg: `El producto: ${nameProduct},fue eliminado exitosamente.`
+                    });
                 }
-                return res.json(productsInfo);
+                return res.status(400).send({
+                    ok: true,
+                    msg: `El producto: ${nameProduct}, no pudo eliminarse.`
+                });
             }
         }
     });
