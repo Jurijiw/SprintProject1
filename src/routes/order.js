@@ -44,8 +44,6 @@ function getRouterOrders() {
         const idOrder = Number(req.params.idOrder);
         const idProd = Number(req.headers.idprod);
         const amount = Number(req.headers.amount);
-
-        console.log('ID prod', idProd);
         const order = updateOrder(idOrder, idProd, amount);
         if (order !== '') {
             return res.status(200).send({

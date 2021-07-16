@@ -277,7 +277,7 @@ paths:
           name: id
           schema:
             type: number
-            example: 1625082125742
+            example: 1625082031025
           required: true
           description: Numeric ID of the payment method.
       responses:
@@ -549,6 +549,10 @@ components:
           type: string
           format: email
           example: alopez@mail.com
+        phoneNumber:
+          type: string
+          format: password
+          example: 12345678
         phoneNumber:
           type: number
           example: 2964635241

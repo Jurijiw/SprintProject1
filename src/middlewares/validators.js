@@ -150,7 +150,6 @@ function validatePMID(req, res, next) {
 function validate1pendingOrder(req, res, next) {
     const idUser = Number(req.headers.id);
     const exists = ordersInfo.find(order => order.userId === idUser && order.status === 1);
-    console.log('Existe:', exists);
     if(exists === undefined) {
         return next();
     }                  

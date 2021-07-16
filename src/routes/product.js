@@ -37,7 +37,6 @@ function getRouterProd() {
     });
 
     router.post('/products', isAdmin,(req, res) => {
-        console.log(req.body);
         const id = new Date().getTime();
         const bodyOk = checkBody(req.body);
         if( bodyOk === '') {
