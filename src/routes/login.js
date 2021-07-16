@@ -17,7 +17,7 @@ function getRouter() {
                 index: index
             })
         }
-        res.status(400).send({
+        res.status(404).send({
             ok: true,
             msg: 'Invalid user'});
     });

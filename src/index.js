@@ -7,6 +7,7 @@ const { getRouterPM } = require('./routes/paymentMethod');
 const { getRouterProd } = require('./routes/product');
 const { getRouterUser } = require('./routes/user');
 const { getRouterOrders } = require('./routes/order');
+const { isLogin } = require('./middlewares/validators');
 
 const version = '/api/v1';
 const port = process.env.PORT || 3030;
@@ -23,6 +24,7 @@ function main(){
     //Users routes - Probadas
     server.use(version, getRouterUser());
 
+    server.use( isLogin );
     //Payment Methods routes - 
     server.use(version, getRouterPM());
 

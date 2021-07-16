@@ -7,20 +7,8 @@ const { getFavs } = require('../data/orders');
 function getRouterProd() {
     const router = express.Router();
 
-    router.get('/products', isLogin, isAdmin, (req, res) => {
-        if( productsInfo.length > 0){
-            res.status(200).send({
-                ok: true,
-                products: productsInfo});
-        } else {
-            res.status(200).send({
-                ok: true,
-                msg: 'Lo sentimos. No existen productos aun.'});
-        }
-    });
-
-    router.get('/users/:idUser/products', isLogin ,validateUserID, (req, res) => {
-        const id = Number(req.params.idUser);
+    router.get('/users/products', validateUserID, (req, res) => {
+        const id = Number(req.headers.id);
         const favs = getFavs(id);
         const activeProds = productsInfo.filter(product => product.active === true );
         if( productsInfo.length > 0){
@@ -35,7 +23,20 @@ function getRouterProd() {
         }
     });
 
-    router.post('/products', isLogin ,isAdmin, (req, res) => {
+    router.get('/products', isAdmin, (req, res) => {
+
+        if( productsInfo.length > 0){
+            return res.status(200).send({
+                    ok: true,
+                    products: productsInfo});
+        } else {
+            res.status(200).send({
+                ok: true,
+                msg: 'Lo sentimos. No existen productos aun.'});
+        }
+    });
+
+    router.post('/products', isAdmin,(req, res) => {
         console.log(req.body);
         const id = new Date().getTime();
         const bodyOk = checkBody(req.body);
@@ -59,7 +60,7 @@ function getRouterProd() {
         });
     });
 
-    router.put('/products/:id', isLogin , isAdmin , validateProductByID, (req, res) => {
+    router.put('/products/:id', isAdmin, validateProductByID, (req, res) => {
         const idProd = Number(req.params.id);
         for (const product of productsInfo) {
             if (idProd === product.id) {
@@ -81,7 +82,7 @@ function getRouterProd() {
         }
     });
 
-    router.delete('/products/:id', isLogin , isAdmin , validateProductByID, (req, res) => {
+    router.delete('/products/:id', isAdmin, validateProductByID, (req, res) => {
         const idProd = Number(req.params.id);
         for (const product of productsInfo) {
             const nameProduct = product.detail;

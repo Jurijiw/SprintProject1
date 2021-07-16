@@ -66,15 +66,15 @@ paths:
           description: Response returns new user information.
         404:
           description: Failed to create a new user.
-  /users/{idUser}/products:
+  /users/products:
     get:
       tags: 
         - Products
       summary: Get all actives and fav products by user id.
       description: Endpoint to get all actives Products and user's fav products. It is visible to user only.
       parameters:
-        - in: path
-          name: idUser
+        - in: header
+          name: id
           schema:
             type: number
             example: 1625080204721
@@ -190,7 +190,7 @@ paths:
       tags: 
         - Payment Methods
       summary: Get all existing payment method.
-      description: Endpoint to get all Payment Methods. It is just for admin user only.
+      description: Endpoint to get all Payment Methods. When the user id corresponds to an admin, it returns the active and inactive means of payment. When it is a common user, it returns only the active payment methods.
       parameters:
         - in: header
           name: id
@@ -198,10 +198,10 @@ paths:
             type: number
             example: 1625080182519
           required: true
-          description: Numeric ID of the admin user.
+          description: Numeric ID of the user.
       responses:
         200:
-          description: Response returns all Payment Methods, actives and inactives.
+          description: Response returns all Payment Methods.
         404:
           description: Failed to load all Payment Methods.
     post:
@@ -285,12 +285,248 @@ paths:
           description: Response returns a confirmation message.
         404:
           description: Failed to delete payment method.
-          
-          
-
-          
-          
-          
+  /users/orders:
+    get:
+      tags: 
+        - Orders (users)
+      summary: Get orders history of one user.
+      description: Endpoint to get orders history.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080204721
+          required: true
+          description: Numeric ID of the user.
+      responses:
+        200:
+          description: Response returns an array with orders history.
+        404:
+          description: Failed to load orders history.
+    post:
+      tags: 
+        - Orders (users)
+      summary: Create a new order for one user.
+      description: Endpoint to create a new order for one user.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080204721
+          required: true
+          description: Numeric ID of the user.
+      responses:
+        200:
+          description: Response returns a confirmation message with order ID.
+        404:
+          description: Failed to create a new order.  
+  /users/orders/{idOrder}:     
+    get:
+      tags: 
+        - Orders (users)
+      summary: Get one order identified by the provided ID.
+      description: Endpoint to get one order identified by the provided ID.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080204721
+          required: true
+        - in: path
+          name: idOrder
+          schema:
+            type: number
+            example: 1625081464339
+          required: true
+          description: Numeric ID of the order.
+      responses:
+        200:
+          description: Response returns order array if the ids are correct. If the ids do not match, it returns an empty array.
+        404:
+          description: Failed to load order data. It returns an empty array.
+    put:
+      tags: 
+        - Orders (users)
+      summary: Add or update a product in detail array.
+      description: Endpoint to add a new product to detail array or update an existing product in detail array.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080204721
+          required: true
+        - in: header
+          name: idprod
+          schema:
+            type: number
+            example: 1625082848172
+          required: true
+        - in: header
+          name: amount
+          schema:
+            type: number
+            example: 2
+            minimun: 1
+          required: true
+        - in: path
+          name: idOrder
+          schema:
+            type: number
+            example: 1625081464339
+          required: true
+          description: Numeric ID of the order.
+      responses:
+        200:
+          description: Response returns a confirmation message.
+        404:
+          description: Failed to load add or update product. It returns an message.      
+    delete:
+      tags: 
+        - Orders (users)
+      summary: Delete a product in detail array.
+      description: Endpoint to delete a product to detail array.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080204721
+          required: true
+        - in: header
+          name: idprod
+          schema:
+            type: number
+            example: 1625082848172
+          required: true
+        - in: path
+          name: idOrder
+          schema:
+            type: number
+            example: 1625081464339
+          required: true
+          description: Numeric ID of the order.
+      responses:
+        200:
+          description: Response returns order array if the ids are correct. If the ids do not match, it returns an empty array.
+        404:
+          description: Failed to load order data. It returns an empty array.
+  /users/orders/{idOrder}/confirm:   
+    put:
+      tags: 
+        - Orders (users)
+      summary: Confirm an order.
+      description: Endpoint to confirm the order. If the address does not exist, it takes the user address of user register form.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080204721
+          required: true
+        - in: path
+          name: idOrder
+          schema:
+            type: number
+            example: 1625081464339
+          required: true
+          description: Numeric ID of the order.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        200:
+          description: Response returns a confirmation message.
+        404:
+          description: Failed to load confirm the order. It returns a message.
+  /orders:
+    get:
+      tags: 
+        - Orders (admins)
+      summary: Get all orders.
+      description: Endpoint to get all orders including those that are still pending.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user.
+      responses:
+        200:
+          description: Response returns an array including one array for each status.
+        404:
+          description: Failed to load orders.
+  /orders/{idOrder}:
+    get:
+      tags: 
+        - Orders (admins)
+      summary: Get all orders.
+      description: Endpoint to get all orders including those that are still pending.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user
+        - in: path
+          name: idOrder
+          schema:
+            type: number
+            example: 1625081478738
+          required: true
+          description: Numeric ID of the order.
+      responses:
+        200:
+          description: Response returns order information.
+        404:
+          description: Failed to load order.
+    put:
+      tags: 
+        - Orders (admins)
+      summary: Update order status.
+      description: Endpoint to update the status of the selected order.
+      parameters:
+        - in: header
+          name: id
+          schema:
+            type: number
+            example: 1625080182519
+          required: true
+          description: Numeric ID of the admin user
+        - in: path
+          name: idOrder
+          schema:
+            type: number
+            example: 1625081478738
+          required: true
+          description: Numeric ID of the order.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+      responses:
+        200:
+          description: Response returns order information with new status.
+        404:
+          description: Failed to update order.
 components:
   schemas:
     User:
@@ -353,43 +589,12 @@ components:
         detail:
           type: string
           example: Tarjeta de credito
-
-
-
-
     Order:
       required:
-        - id
-        - detail
-        - userId
         - paymentMethod
-        - address
-        - status
-        - date
       properties:
-        id:
-          type: string
-          format: uuid
-          example: 1625082031025
-        detail:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-                example: 1625082848172
-              amount:
-                type: integer
-                minimum: 1
-                example: 6
-        userId:
-          type: string
-          format: uuid
-          example: 1625080204721
         paymentMethod:
-          type: string
-          format: uuid
+          type: number
           example: 1625082031025
         address:
           type: object
@@ -406,12 +611,3 @@ components:
             province:
               type: string
               example: TDF
-        status:
-          type: number
-          minimum: 1
-          maximum: 5
-          example: 1
-        date:
-          type: string
-          format: date-time
-          example: '2021-07-05T03:50:06.166Z'

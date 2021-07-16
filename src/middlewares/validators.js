@@ -2,6 +2,7 @@ const { usersInfo } = require("../data/users");
 const { productsInfo } = require("../data/products");
 const { ordersInfo } = require("../data/orders");
 const { paymentMethodsInfo } = require("../data/paymentMethods");
+const { statusInfo } = require("../data/status");
 
 //Users validations
 function isLogin(req, res, next) {
@@ -45,7 +46,7 @@ function validateUsername(req, res, next) {
 }
 
 function validateUserID(req, res, next) {
-    const idUser = Number(req.params.idUser);
+    const idUser = Number(req.headers.id);
     if (idUser === null || idUser === undefined || idUser === ''){
         return res.status(404).send({
             ok: true,
@@ -86,27 +87,22 @@ function validateProductByID(req, res, next) {
 }
 
 function validateProduct(req, res, next) {
-    let auxiliar = req.body.detail;
-    let products = new Array();
-    for (const aux of auxiliar) {
-        prod = {
-            idProduct: aux.idProduct,
-            amount: aux.amount
-        }
-        products.push(prod);
-    }
-    console.log('Productos req', products.length);
-    if(products.length > 0) {
-        for (const product of products) {
-            let exists = productsInfo.find(prod => prod.id === product.idProduct && prod.active === true);
-            console.log('Existe:', exists);
-            if(exists === undefined) {
-                return res.status(404).send('El producto solicitado no se encuentra disponible.');
+    const productID = Number(req.headers.idprod);
+    const amount = Number(req.headers.amount);
+
+    for (const product of productsInfo) {
+        if (product.id === productID) {
+            if (amount <= 0) {
+               return res.status(404).send({
+                        ok: true,
+                        msg: 'La cantidad debe ser mayor a 0.'});
             }
+            return next();
         }
-        return next();
     }
-    return res.status(404).send('Debe agregar al menos un producto a su pedido.');
+    res.status(404).send({
+        ok: true,
+        msg: 'El producto solicitado no existe.'});
 }
 
 //Orders validations
@@ -151,6 +147,20 @@ function validatePMID(req, res, next) {
     }
 }  
 
+function validate1pendingOrder(req, res, next) {
+    const idUser = Number(req.headers.id);
+    const exists = ordersInfo.find(order => order.userId === idUser && order.status === 1);
+    console.log('Existe:', exists);
+    if(exists === undefined) {
+        return next();
+    }                  
+    res.status(404).send({
+        ok: true,
+        msg: 'Ya existe un pedido pendiente.',
+        orderNumber: exists.id
+    }); 
+}
+
 function validateOrderStatus(req, res, next) {
     const idOrder = Number(req.params.idOrder);
     for (const order of ordersInfo) {
@@ -164,6 +174,44 @@ function validateOrderStatus(req, res, next) {
     });
 }  
 
+function validateOrderStatusConfirm(req, res, next) {
+    const idOrder = Number(req.params.idOrder);
+    for (const order of ordersInfo) {
+        if(order.id === idOrder && order.status !== 1) {
+            return next();
+        }
+    }
+    res.status(404).send({
+        ok: true,
+        msg: 'El pedido aun no ha sido confirmado.'
+    });
+}  
+
+function validateStatus(req, res, next) {
+    if ( !req.body.status || req.body.status === null || req.body.status === undefined || req.body.status === '') {
+        return res.status(404).send({
+                    ok: true,
+                    msg: 'Por favor ingrese un id valido del estado del pedido.'
+                });
+    }
+    const statusSent = Number(req.body.status);
+    if (statusSent === 1) {
+        return res.status(404).send({
+            ok: true,
+            msg: 'El pedido ya ha sido confirmado. El estado que intenta asignar es incorrecto.'
+        });
+    }
+    for (const status of statusInfo) {
+        if(status.id === statusSent) {
+            return next();
+        }
+    }
+    res.status(404).send({
+        ok: true,
+        msg: 'El estado ingresado no existe. Verifique.'
+    });
+}
+
 module.exports = {
     isLogin,
     isAdmin,
@@ -174,5 +222,8 @@ module.exports = {
     validateOrderID,
     validateUserID,
     validatePMID,
-    validateOrderStatus
+    validateOrderStatus, 
+    validate1pendingOrder,
+    validateOrderStatusConfirm,
+    validateStatus
 }
